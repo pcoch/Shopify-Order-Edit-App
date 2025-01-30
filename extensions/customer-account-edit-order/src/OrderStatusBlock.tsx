@@ -14,8 +14,7 @@ import {
   BlockStack,
 } from "@shopify/ui-extensions-react/customer-account";
 import { useState, useEffect } from "react";
-import CancelOrder from "./components/cancelOrder";
-import { useOrderCancel } from "./hooks/useOrderCancel";
+import CancelOrder from "./components/CancelOrder";
 
 export default reactExtension(
   "customer-account.order-status.block.render",
@@ -27,12 +26,6 @@ function OrderEditBlock() {
   const sessionToken = useSessionToken();
   const { id, cancelledAt, processedAt } = useOrder();
   const { navigation } = useApi();
-
-  const { handleCancel, cancelStatus } = useOrderCancel({
-    sessionToken,
-    orderId: id,
-    navigation,
-  });
 
   //Handle 30 minute edit window
   const [timeLeft, setTimeLeft] = useState(() => {
@@ -91,7 +84,12 @@ function OrderEditBlock() {
               />
             </Banner>
 
-            <CancelOrder onCancel={handleCancel} cancelStatus={cancelStatus} />
+            <CancelOrder
+              sessionToken={sessionToken}
+              orderId={id}
+              navigation={navigation}
+            ></CancelOrder>
+
             <Disclosure>
               <Pressable
                 border={["none", "none", "base", "none"]}
@@ -145,50 +143,3 @@ function OrderEditBlock() {
     )
   );
 }
-
-// //Handle cancel order
-// const handleCancelOrder = async (): Promise<void> => {
-//   try {
-//     const token: string = await sessionToken.get();
-//     const requestBody = {
-//       orderId: id,
-//     };
-//     const requestPayload = JSON.stringify(requestBody);
-//     const response: Response = await fetch(
-//       "https://spies-cottage-centres-avenue.trycloudflare.com/api/cancel-order",
-//       {
-//         method: "POST",
-//         headers: {
-//           "Content-Type": "application/json",
-//           Authorization: `Bearer ${token}`,
-//           Accept: "application/json",
-//         },
-//         body: requestPayload,
-//       },
-//     );
-//     const { success, data } = await response.json();
-
-//     if (success && data.data.orderCancel) {
-//       const { orderCancelUserErrors, userErrors } = data.data.orderCancel;
-
-//       if (orderCancelUserErrors.length === 0 && userErrors.length === 0) {
-//         setCancelStatus({ success: true });
-//         setTimeout(() => {
-//           navigation.navigate("shopify:customer-account/orders");
-//         }, 1500);
-//       } else {
-//         const errorMessage =
-//           orderCancelUserErrors[0]?.message ||
-//           userErrors[0]?.message ||
-//           "Cancellation failed";
-//         setCancelStatus({ success: false, error: errorMessage });
-//       }
-//     }
-//   } catch (error) {
-//     console.error("Error details:", error);
-//     setCancelStatus({
-//       success: false,
-//       error: error instanceof Error ? error.message : "An error occurred",
-//     });
-//   }
-// };

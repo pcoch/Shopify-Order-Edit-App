@@ -3,24 +3,72 @@ import {
   Pressable,
   Button,
   InlineLayout,
+  List,
+  ListItem,
+  BlockSpacer,
   View,
   Icon,
   Text,
   Banner,
 } from "@shopify/ui-extensions-react/customer-account";
+import { useState } from "react";
 
-interface CancelOrderProps {
-  onCancel: () => Promise<void>;
-  cancelStatus: {
+export default function CancelOrder({ sessionToken, orderId, navigation }) {
+  const [cancelStatus, setCancelStatus] = useState<{
     success?: boolean;
     error?: string;
-  };
-}
+  }>({});
+  const [isLoading, setIsLoading] = useState(false);
 
-export default function CancelOrder({
-  onCancel,
-  cancelStatus,
-}: CancelOrderProps) {
+  const handleCancel = async () => {
+    try {
+      setIsLoading(true);
+      const token = await sessionToken.get();
+      const requestBody = {
+        orderId: orderId,
+      };
+      const requestPayload = JSON.stringify(requestBody);
+      const response = await fetch(
+        "https://airplane-closer-gadgets-rm.trycloudflare.com/api/cancel-order", //TODO: Change to production URL
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+          body: requestPayload,
+        },
+      );
+      const { success, data } = await response.json();
+
+      if (success && data.data.orderCancel) {
+        const { orderCancelUserErrors, userErrors } = data.data.orderCancel;
+
+        if (orderCancelUserErrors.length === 0 && userErrors.length === 0) {
+          setCancelStatus({ success: true });
+        } else {
+          const errorMessage =
+            orderCancelUserErrors[0]?.message ||
+            userErrors[0]?.message ||
+            "Cancellation failed";
+          setCancelStatus({ success: false, error: errorMessage });
+        }
+      }
+    } catch (error) {
+      console.error("Error details:", error);
+      setCancelStatus({
+        success: false,
+        error: error instanceof Error ? error.message : "An error occurred",
+      });
+    } finally {
+      setTimeout(() => {
+        setIsLoading(false);
+        navigation.navigate("shopify:customer-account/orders");
+      }, 1500);
+    }
+  };
+
   return (
     <Disclosure>
       <Pressable
@@ -39,16 +87,36 @@ export default function CancelOrder({
           </View>
         </InlineLayout>
       </Pressable>
-      <View padding="base" id="cancel-section">
-        <Text>Are you sure you want to cancel your order?</Text>
-        <Button onPress={onCancel} loadingLabel="Cancelling order...">
-          Cancel Order
+      <View id="cancel-section">
+        <Banner
+          title="Are you sure you want to cancel your order?"
+          status="warning"
+        >
+          <List>
+            <ListItem>
+              You will recieve an email confirmation of your cancellation
+            </ListItem>
+            <ListItem>Cancelling your ordercan't be undone</ListItem>
+          </List>
+        </Banner>
+        <BlockSpacer spacing="base"></BlockSpacer>
+
+        <Button
+          kind="secondary"
+          loading={isLoading}
+          onPress={handleCancel}
+          loadingLabel="Cancelling order..."
+        >
+          Cancel order
         </Button>
-        {cancelStatus.success && (
-          <Banner status="success">Order cancellation successful</Banner>
-        )}
+        <BlockSpacer spacing="base"></BlockSpacer>
         {cancelStatus.error && (
-          <Banner status="critical">{cancelStatus.error}</Banner>
+          <Banner
+            title="There was an error cancelling your order. "
+            status="critical"
+          >
+            Please contact support.
+          </Banner>
         )}
       </View>
     </Disclosure>
