@@ -1,28 +1,37 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "8dc689df5e38ed084049ef61706f2402"
-application_url = "https://example.com/"
+application_url = "https://plant-talks-highly-selective.trycloudflare.com"
 embedded = true
 name = "order-edit-app"
 handle = "order-edit-app-3"
+
+[build]
+automatically_update_urls_on_dev = true
+dev_store_url = "order-edit-test.myshopify.com"
+include_config_on_deploy = true
 
 [webhooks]
 api_version = "2025-01"
 
   [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
-
-  [[webhooks.subscriptions]]
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
+  [[webhooks.subscriptions]]
+  topics = [ "app/uninstalled" ]
+  uri = "/webhooks/app/uninstalled"
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+scopes = "read_customers,read_orders,write_order_edits,write_orders,write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [
+  "https://plant-talks-highly-selective.trycloudflare.com/auth/callback",
+  "https://plant-talks-highly-selective.trycloudflare.com/auth/shopify/callback",
+  "https://plant-talks-highly-selective.trycloudflare.com/api/auth/callback"
+]
 
 [pos]
 embedded = false
