@@ -16,7 +16,7 @@ type = "ui_extension"
 # https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/extension-targets-overview
 
 [[extensions.targeting]]
-module = "./src/OrderStatusBlock.tsx"
+module = "./src/OrderEditBlock.tsx"
 target = "customer-account.order-status.block.render"
 
 [extensions.capabilities]
