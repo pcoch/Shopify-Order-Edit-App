@@ -15,6 +15,7 @@ import {
 } from "@shopify/ui-extensions-react/customer-account";
 import { useState, useEffect } from "react";
 import CancelOrder from "./components/CancelOrder";
+import EditAddress from "./components/EditAddress";
 
 export default reactExtension(
   "customer-account.order-status.block.render",
@@ -90,27 +91,11 @@ function OrderEditBlock() {
               navigation={navigation}
             ></CancelOrder>
 
-            <Disclosure>
-              <Pressable
-                border={["none", "none", "base", "none"]}
-                toggles="one"
-              >
-                <InlineLayout columns={["auto", "fill", "auto"]}>
-                  <View padding="base">
-                    <Icon source="delivered" />
-                  </View>
-                  <View padding="base">
-                    <Text emphasis="bold">Edit your shipping address</Text>
-                  </View>
-                  <View padding="base">
-                    <Icon source="chevronDown" />
-                  </View>
-                </InlineLayout>
-              </Pressable>
-              <View padding="base" id="one">
-                Content
-              </View>
-            </Disclosure>
+            <EditAddress
+              sessionToken={sessionToken}
+              orderId={id}
+              navigation={navigation}
+            ></EditAddress>
 
             <Disclosure>
               <Pressable

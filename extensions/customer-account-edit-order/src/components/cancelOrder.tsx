@@ -3,8 +3,6 @@ import {
   Pressable,
   Button,
   InlineLayout,
-  List,
-  ListItem,
   BlockSpacer,
   View,
   Icon,
@@ -92,17 +90,13 @@ export default function CancelOrder({ sessionToken, orderId, navigation }) {
           title="Are you sure you want to cancel your order?"
           status="warning"
         >
-          <List>
-            <ListItem>
-              You will recieve an email confirmation of your cancellation
-            </ListItem>
-            <ListItem>Cancelling your ordercan't be undone</ListItem>
-          </List>
+          <Text>
+            You will recieve an email confirmation and a refund will be issued
+            to your original payment method.
+          </Text>
         </Banner>
         <BlockSpacer spacing="base"></BlockSpacer>
-
         <Button
-          kind="secondary"
           loading={isLoading}
           onPress={handleCancel}
           loadingLabel="Cancelling order..."

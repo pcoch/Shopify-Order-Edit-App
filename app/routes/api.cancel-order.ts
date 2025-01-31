@@ -22,7 +22,7 @@ export async function action({ request }: ActionFunctionArgs) {
           orderId: $orderId,
           notifyCustomer: true,
           reason: CUSTOMER,
-          refund: false,
+          refund: true,
           restock: true
         ) {
           job {
