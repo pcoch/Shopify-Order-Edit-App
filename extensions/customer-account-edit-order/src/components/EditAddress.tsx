@@ -6,6 +6,7 @@ import {
   Form,
   Grid,
   TextField,
+  Banner,
   GridItem,
   BlockSpacer,
   View,
@@ -13,7 +14,7 @@ import {
   Text,
   useApi,
 } from "@shopify/ui-extensions-react/customer-account";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import * as countries from "i18n-iso-countries";
 const en = require("i18n-iso-countries/langs/en.json");
@@ -33,6 +34,7 @@ export default function EditAddress({ sessionToken, orderId }) {
   const [address, setAddress] = useState(shippingAddress);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errors, setErrors] = useState();
 
   //Pass the address to the API
   const handleEditAddress = async () => {
@@ -47,7 +49,7 @@ export default function EditAddress({ sessionToken, orderId }) {
       const requestPayload = JSON.stringify(requestBody);
 
       const response = await fetch(
-        "https://generations-income-boring-argued.trycloudflare.com/api/edit-address", //TODO: Change to production URL
+        "https://about-pick-removed-rewards.trycloudflare.com/api/edit-address", //TODO: Change to production URL
         {
           method: "POST",
           headers: {
@@ -58,16 +60,38 @@ export default function EditAddress({ sessionToken, orderId }) {
           body: requestPayload,
         },
       );
-      const { success } = await response.json();
+      const { success, data } = await response.json();
 
-      if (success) {
+      const errors = data.data.orderUpdate.userErrors;
+      console.log("User Errors:", JSON.stringify(errors));
+
+      if (success && errors.length === 0) {
+        setErrors(null);
         setIsLoading(false);
         setIsSuccess(true);
+        setTimeout(() => {
+          setIsSuccess(false);
+        }, 3000);
+      } else if (success && errors.length > 0) {
+        setErrors(errors[0].message);
+        setIsLoading(false);
       }
     } catch (error) {
       console.error("Error details:", error);
       setIsLoading(false);
     }
+  };
+
+  // Validation function to check for errors
+  const hasValidationErrors = () => {
+    return (
+      !address.firstName ||
+      !address.lastName ||
+      !address.address1 ||
+      !address.city ||
+      !address.provinceCode ||
+      !address.zip
+    );
   };
 
   return (
@@ -95,6 +119,7 @@ export default function EditAddress({ sessionToken, orderId }) {
               <TextField
                 autocomplete
                 required
+                error={address.firstName ? "" : "First name is required"}
                 label="First name"
                 value={address.firstName}
                 onChange={(value) =>
@@ -106,6 +131,7 @@ export default function EditAddress({ sessionToken, orderId }) {
               <TextField
                 autocomplete
                 required
+                error={address.lastName ? "" : "Last name is required"}
                 label="Last name"
                 value={address.lastName}
                 onChange={(value) =>
@@ -117,6 +143,7 @@ export default function EditAddress({ sessionToken, orderId }) {
               <TextField
                 autocomplete
                 required
+                error={address.address1 ? "" : "Address is required"}
                 label="Address"
                 value={address.address1}
                 onChange={(value) =>
@@ -140,6 +167,7 @@ export default function EditAddress({ sessionToken, orderId }) {
                   <TextField
                     label="City"
                     required
+                    error={address.city ? "" : "City is required"}
                     value={address.city}
                     onChange={(value) =>
                       setAddress({ ...address, city: value })
@@ -150,6 +178,7 @@ export default function EditAddress({ sessionToken, orderId }) {
                   <TextField
                     label="State"
                     required
+                    error={address.provinceCode ? "" : "State is required"}
                     value={address.provinceCode}
                     onChange={(value) =>
                       setAddress({ ...address, provinceCode: value })
@@ -169,10 +198,24 @@ export default function EditAddress({ sessionToken, orderId }) {
             </GridItem>
           </Grid>
           <BlockSpacer spacing="base" />
-          <BlockSpacer spacing="base" />
+          {errors && (
+            <View>
+              <Banner
+                title="There was an issue updating your address"
+                status="critical"
+              >
+                {errors}
+              </Banner>
+              <BlockSpacer spacing="base" />
+            </View>
+          )}
           <View maxInlineSize={162} blockAlignment="center" padding="none">
-            <Button loading={isLoading} accessibilityRole="submit">
-              {isSuccess ? "Address updated" : "Update address"}
+            <Button
+              loading={isLoading}
+              accessibilityRole="submit"
+              disabled={hasValidationErrors()}
+            >
+              {isSuccess ? "Address updated!" : "Update address"}
             </Button>
           </View>
         </Form>
