@@ -27,7 +27,7 @@ export default function CancelOrder({ sessionToken, orderId, navigation }) {
       };
       const requestPayload = JSON.stringify(requestBody);
       const response = await fetch(
-        "https://airplane-closer-gadgets-rm.trycloudflare.com/api/cancel-order", //TODO: Change to production URL
+        "https://interesting-occur-slots-pubs.trycloudflare.com/api/cancel-order", //TODO: Change to production URL
         {
           method: "POST",
           headers: {
