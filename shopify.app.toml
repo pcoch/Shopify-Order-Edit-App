@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "8dc689df5e38ed084049ef61706f2402"
-application_url = "https://generations-income-boring-argued.trycloudflare.com"
+application_url = "https://about-pick-removed-rewards.trycloudflare.com"
 embedded = true
 name = "order-edit-app"
 handle = "order-edit-app-3"
@@ -28,9 +28,9 @@ scopes = "read_customers,read_orders,write_order_edits,write_orders,write_produc
 
 [auth]
 redirect_urls = [
-  "https://generations-income-boring-argued.trycloudflare.com/auth/callback",
-  "https://generations-income-boring-argued.trycloudflare.com/auth/shopify/callback",
-  "https://generations-income-boring-argued.trycloudflare.com/api/auth/callback"
+  "https://about-pick-removed-rewards.trycloudflare.com/auth/callback",
+  "https://about-pick-removed-rewards.trycloudflare.com/auth/shopify/callback",
+  "https://about-pick-removed-rewards.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
