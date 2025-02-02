@@ -90,13 +90,7 @@ function OrderEditBlock() {
               orderId={id}
               navigation={navigation}
             ></CancelOrder>
-
-            <EditAddress
-              sessionToken={sessionToken}
-              orderId={id}
-              navigation={navigation}
-            ></EditAddress>
-
+            <EditAddress sessionToken={sessionToken} orderId={id}></EditAddress>
             <Disclosure>
               <Pressable
                 border={["none", "none", "base", "none"]}
