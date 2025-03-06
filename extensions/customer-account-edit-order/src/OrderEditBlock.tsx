@@ -1,12 +1,10 @@
+//TODO: Legacy - we'll remove this once the new edit order page is fully implemented
+
 import {
-  Pressable,
-  InlineLayout,
-  Icon,
   Banner,
   reactExtension,
   useApi,
   View,
-  Disclosure,
   useOrder,
   Text,
   useSessionToken,
@@ -16,6 +14,7 @@ import {
 import { useState, useEffect } from "react";
 import CancelOrder from "./components/CancelOrder";
 import EditAddress from "./components/EditAddress";
+import EditQuantity from "./components/EditQuantity";
 
 export default reactExtension(
   "customer-account.order-status.block.render",
@@ -72,7 +71,7 @@ function OrderEditBlock() {
           <>
             <Banner title="Need to edit your order?">
               <View padding={["base", "none", "base", "none"]}>
-                <Text>Time Left To Edit: {timeLeft}</Text>
+                <Text>Time remaining: {timeLeft}</Text>
               </View>
               <Progress
                 tone="auto"
@@ -93,27 +92,10 @@ function OrderEditBlock() {
 
             <EditAddress sessionToken={sessionToken} orderId={id}></EditAddress>
 
-            <Disclosure>
-              <Pressable
-                border={["none", "none", "base", "none"]}
-                toggles="one"
-              >
-                <InlineLayout columns={["auto", "fill", "auto"]}>
-                  <View padding="base">
-                    <Icon source="reorder" />
-                  </View>
-                  <View padding="base">
-                    <Text emphasis="bold">Change product size</Text>
-                  </View>
-                  <View padding="base">
-                    <Icon source="chevronDown" />
-                  </View>
-                </InlineLayout>
-              </Pressable>
-              <View padding="base" id="one">
-                Content
-              </View>
-            </Disclosure>
+            <EditQuantity
+              sessionToken={sessionToken}
+              orderId={id}
+            ></EditQuantity>
           </>
         ) : (
           <Banner status="info">

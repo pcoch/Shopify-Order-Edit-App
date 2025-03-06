@@ -5,5 +5,5 @@
   "compilerOptions": {
     "jsx": "react-jsx"
   },
-  "include": ["./src", "../edit-order-page/src/components/ModalEditAddress.tsx"]
+  "include": ["./src"]
 }

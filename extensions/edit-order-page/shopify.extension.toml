@@ -6,24 +6,20 @@
 api_version = "2025-01"
 
 [[extensions]]
-name = "customer-account-edit-order"
-handle = "customer-account-edit-order"
+name = "edit-order-page"
+handle = "edit-order-page"
 type = "ui_extension"
 
 # Controls where in Shopify your extension will be injected,
-# and the file that contains your extension's source code. Learn more:
+# and the file that contains your extension’s source code. Learn more:
 # https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/extension-targets-overview
 
 [[extensions.targeting]]
-module = "./src/OrderEditBlock.tsx"
-target = "customer-account.order-status.block.render"
-
-[[extensions.targeting]]
-module = "./src/components/OrderEditMenuBtn.tsx"
-target = "customer-account.order.action.menu-item.render"
+module = "./src/FullPageExtension.tsx"
+target = "customer-account.order.page.render"
 
 [extensions.capabilities]
-# Gives your extension access to directly query Shopify's storefront API.
+# Gives your extension access to directly query Shopify’s storefront API.
 # https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/configuration#api-access
 api_access = true
 
@@ -31,3 +27,4 @@ api_access = true
 # JavaScript `fetch()` API. Learn more:
 # https://shopify.dev/docs/api/customer-account-ui-extensions/unstable/configuration#network-access
 network_access = true
+

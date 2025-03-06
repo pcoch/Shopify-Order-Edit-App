@@ -1,8 +1,5 @@
 import {
-  Disclosure,
-  Pressable,
   Button,
-  InlineLayout,
   Form,
   Grid,
   TextField,
@@ -10,8 +7,7 @@ import {
   GridItem,
   BlockSpacer,
   View,
-  Icon,
-  Text,
+  Modal,
   useApi,
 } from "@shopify/ui-extensions-react/customer-account";
 import { useState } from "react";
@@ -19,11 +15,6 @@ import { useState } from "react";
 import * as countries from "i18n-iso-countries";
 const en = require("i18n-iso-countries/langs/en.json");
 countries.registerLocale(en);
-
-//TODO: Add edit address form
-//TODO: Add edit address form validation
-//TODO: Add edit address form submission
-//TODO: Create API route to update address and return shipping rate if needed
 
 export default function EditAddress({ sessionToken, orderId }) {
   const api = useApi();
@@ -95,20 +86,7 @@ export default function EditAddress({ sessionToken, orderId }) {
   };
 
   return (
-    <Disclosure>
-      <Pressable border={["none", "none", "base", "none"]} toggles="one">
-        <InlineLayout columns={["auto", "fill", "auto"]}>
-          <View padding="base">
-            <Icon source="delivered" />
-          </View>
-          <View padding="base">
-            <Text emphasis="bold">Edit shipping address</Text>
-          </View>
-          <View padding="base">
-            <Icon source="chevronDown" />
-          </View>
-        </InlineLayout>
-      </Pressable>
+    <Modal title="Edit address">
       <View padding="base" id="one">
         <Form onSubmit={handleEditAddress}>
           <Grid columns={["50%", "50%"]} spacing="base">
@@ -220,6 +198,6 @@ export default function EditAddress({ sessionToken, orderId }) {
           </View>
         </Form>
       </View>
-    </Disclosure>
+    </Modal>
   );
 }
