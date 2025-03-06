@@ -1,11 +1,8 @@
 import {
-  Disclosure,
-  Pressable,
+  Modal,
   Button,
-  InlineLayout,
   BlockSpacer,
   View,
-  Icon,
   Text,
   Banner,
 } from "@shopify/ui-extensions-react/customer-account";
@@ -27,7 +24,7 @@ export default function CancelOrder({ sessionToken, orderId, navigation }) {
       };
       const requestPayload = JSON.stringify(requestBody);
       const response = await fetch(
-        "https://bills-acquisition-pressing-uc.trycloudflare.com/api/cancel-order", //TODO: Change to production URL
+        "https://ranking-mexico-trailer-station.trycloudflare.com/api/cancel-order", //TODO: Change to production URL
         {
           method: "POST",
           headers: {
@@ -68,24 +65,8 @@ export default function CancelOrder({ sessionToken, orderId, navigation }) {
   };
 
   return (
-    <Disclosure>
-      <Pressable
-        border={["none", "none", "base", "none"]}
-        toggles="cancel-section"
-      >
-        <InlineLayout columns={["auto", "fill", "auto"]}>
-          <View padding="base">
-            <Icon source="error" />
-          </View>
-          <View padding="base">
-            <Text emphasis="bold">Cancel your order</Text>
-          </View>
-          <View padding="base">
-            <Icon source="chevronDown" />
-          </View>
-        </InlineLayout>
-      </Pressable>
-      <View id="cancel-section">
+    <Modal padding>
+      <View padding="base" id="cancel-section">
         <Banner
           title="Are you sure you want to cancel your order?"
           status="warning"
@@ -113,6 +94,6 @@ export default function CancelOrder({ sessionToken, orderId, navigation }) {
           </Banner>
         )}
       </View>
-    </Disclosure>
+    </Modal>
   );
 }

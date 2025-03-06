@@ -2,7 +2,10 @@
 
 # Functionality
 
-Customers can edit order on the Order Summary page (up to 30 mins after order)
+- Customers can make minor edits on the Order Summary page (up to 30 mins after order)
+- Customers can make minor AND major edits on the dedicated Order Edit Page
+- Minor edits: anything that doesn't require a refund or new invoice - i.e change shipping address, cancel order
+- Major edits: anything that requires a refund or new invoice - adjust quantities, change product variants, change shipping, add new items
 
 # Technical Summary
 
@@ -12,3 +15,13 @@ Customers can edit order on the Order Summary page (up to 30 mins after order)
 
 Purposefully not adding checkout UI extensions. When customers refresh the page they go to the account page where they can edit their order.
 Potentially an edit order button on the checkout UI page to navigate them, but likely not neccesary.
+
+#TODO
+
+- Remove the order status page extensions - just keep it all in the one order edit page.
+- Add products feature (recommended products)
+
+#Bugs
+
+- Unable to get available inventory with SFAPI for a product variant: https://github.com/Shopify/ui-extensions/issues/1594
+- When updating from a modal for the first edit, the button will turn to enabled before the modal closes.
