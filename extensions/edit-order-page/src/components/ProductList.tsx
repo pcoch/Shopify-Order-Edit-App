@@ -37,14 +37,23 @@ export default function ProductList({
   setIsLoading,
 }) {
   // @ts-ignore
-  const lineCount = useApi().lines.current.length; //used for skeleton loading count
-  const lines =
-    calculatedOrder?.lineItems?.edges?.map((edge) => edge?.node) || [];
-
+  const lineCount = useApi().lines.current.length;
   const { i18n } = useApi();
 
-  // If no lines are available yet, show a loading state or placeholder
-  if (!lines || lines.length === 0) {
+  const regularLines =
+    calculatedOrder?.lineItems?.edges?.map((edge) => edge?.node) || [];
+
+  const addedLines =
+    calculatedOrder?.addedLineItems?.edges
+      ?.map((edge) => edge?.node)
+      .filter(
+        (line) =>
+          line.title && line.originalUnitPriceSet?.presentmentMoney?.amount,
+      ) || [];
+
+  const allLines = [...regularLines, ...addedLines];
+
+  if (!allLines || allLines.length === 0) {
     return (
       <BlockStack spacing="base" minInlineSize="fill">
         <SkeletonText inlineSize="small" />
@@ -57,8 +66,8 @@ export default function ProductList({
 
   return (
     <BlockStack spacing="base" minInlineSize="fill">
-      <Heading level={3}>Edit Products</Heading>
-      {lines.map((line: LineItem) => {
+      <Heading level={2}>Edit your order</Heading>
+      {allLines.map((line: LineItem) => {
         return (
           <View
             key={line.id}
@@ -79,10 +88,12 @@ export default function ProductList({
               />
               <BlockStack
                 padding={["none", "none", "none", "base"]}
-                spacing="extraTight"
+                spacing="none"
               >
-                <Text emphasis="bold">
-                  {line.title} - {line?.variant?.title}
+                <Text size="base" emphasis="bold">
+                  {line.title}
+                  {line?.variant?.title !== "Default Title" &&
+                    `: ${line?.variant?.title}`}
                 </Text>
                 <Text appearance="subdued">
                   {line.quantity} x{" "}

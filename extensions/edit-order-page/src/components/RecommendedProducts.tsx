@@ -9,46 +9,173 @@ import {
   Button,
   SkeletonText,
   SkeletonImage,
+  useSessionToken,
 } from "@shopify/ui-extensions-react/customer-account";
-import ModalEditQty from "./ModalEditQty";
+import { useEffect, useState } from "react";
 
-interface LineItem {
-  id: string;
-  title: string;
-  quantity: number;
-  image?: {
-    url: string;
-  };
-  variant?: {
-    title: string;
-    inventoryQuantity: number;
-  };
-  originalUnitPriceSet?: {
-    presentmentMoney?: {
-      amount: string;
-    };
-  };
-}
+//TODO: Add a button to remove the item from the order
 
 export default function RecommendedProducts({
   calculatedOrder,
   setCalculatedOrder,
-  isLoading,
   setIsLoading,
 }) {
-  // @ts-ignore
-  const lineCount = useApi().lines.current.length; //used for skeleton loading count
-  const lines =
-    calculatedOrder?.lineItems?.edges?.map((edge) => edge?.node) || [];
+  const [lines, setLines] = useState([]); // For recommended product lines
+  const [loadingVariantId, setLoadingVariantId] = useState(null); // Track which variant is being added
+  const { i18n, query } = useApi();
+  const sessionToken = useSessionToken();
 
-  const { i18n } = useApi();
+  //Handle add item
+  const handleAddItem = async (variantId: string) => {
+    setLoadingVariantId(variantId);
+    setIsLoading(true);
+    try {
+      const token = await sessionToken.get();
+      const response = await fetch(
+        "https://include-objective-homework-truly.trycloudflare.com/api/add-item",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            calculatedOrderId: calculatedOrder.id,
+            lineItemId: variantId,
+            quantity: 1,
+          }),
+        },
+      );
 
-  // If no lines are available yet, show a loading state or placeholder
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(
+          data.errors?.[0]?.message || data.error || "Failed to add item",
+        );
+      }
+
+      if (data.success) {
+        setCalculatedOrder(data.data.orderEditAddVariant.calculatedOrder);
+      }
+    } catch (error) {
+      console.error("Failed to add item:", error);
+    } finally {
+      setLoadingVariantId(null);
+      setIsLoading(false);
+    }
+  };
+
+  //Fetch recommended products
+  const RECOMMENDED_PRODUCTS_QUERY = `
+  query getRecommendedProducts($productId: ID!) {
+    productRecommendations(productId: $productId, intent: RELATED) {
+      id
+      title
+      variants(first: 1) {
+        edges {
+          node {
+            id
+            title
+            price {
+              amount
+              currencyCode
+            }
+              image {
+              url
+              altText
+              }
+          }
+        }
+      }
+    }
+  }
+`;
+
+  const getProductIds = (calculatedOrder: any) => {
+    if (!calculatedOrder || !calculatedOrder.lineItems?.edges) {
+      return [];
+    }
+
+    return calculatedOrder.lineItems.edges
+      .filter((edge) => edge?.node?.variant?.product)
+      .map((edge) => edge.node.variant.product.id);
+  };
+
+  const processRecommendations = (recommendationsArray, calculatedOrder) => {
+    if (!calculatedOrder?.lineItems?.edges) {
+      console.log("Missing line items in calculated order:", calculatedOrder);
+      return [];
+    }
+
+    const existingProductIds = new Set(
+      calculatedOrder.lineItems.edges
+        .filter((edge) => edge?.node?.variant?.product)
+        .map((edge) => edge.node.variant.product.id),
+    );
+
+    const flattenedProducts = recommendationsArray
+      .flatMap((result) => result.data?.productRecommendations || [])
+      .filter(
+        (product, index, self) =>
+          product &&
+          index === self.findIndex((p) => p.id === product.id) &&
+          !existingProductIds.has(product.id),
+      )
+      .slice(0, 3);
+    return flattenedProducts;
+  };
+
+  const fetchRecommendations = async () => {
+    try {
+      const productIds = getProductIds(calculatedOrder);
+
+      if (productIds.length === 0) {
+        return;
+      }
+
+      const recommendations = await Promise.all(
+        productIds.map((productId) =>
+          query(RECOMMENDED_PRODUCTS_QUERY, { variables: { productId } }),
+        ),
+      );
+
+      const processedRecommendations = processRecommendations(
+        recommendations,
+        calculatedOrder,
+      );
+      setLines(processedRecommendations);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      setLines([]);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecommendations();
+  }, [calculatedOrder]);
+
+  const isProductInOrder = (variantId: string) => {
+    const regularLineVariants =
+      calculatedOrder?.lineItems?.edges?.map(
+        (edge) => edge?.node?.variant?.id,
+      ) || [];
+
+    const addedLineVariants =
+      calculatedOrder?.addedLineItems?.edges?.map(
+        (edge) => edge?.node?.variant?.id,
+      ) || [];
+
+    const allVariants = [...regularLineVariants, ...addedLineVariants];
+    return allVariants.includes(variantId);
+  };
+
   if (!lines || lines.length === 0) {
     return (
       <BlockStack spacing="base" minInlineSize="fill">
         <SkeletonText inlineSize="small" />
-        {Array.from({ length: lineCount }).map((_, index) => (
+        {Array.from({ length: 3 }).map((_, index) => (
           <SkeletonImage key={index} inlineSize="fill" blockSize={80} />
         ))}
       </BlockStack>
@@ -57,63 +184,47 @@ export default function RecommendedProducts({
 
   return (
     <BlockStack spacing="base" minInlineSize="fill">
-      <Heading level={3}>Edit Products</Heading>
-      {lines.map((line: LineItem) => {
+      <Heading level={2}>You might also like</Heading>
+      {lines.map((line) => {
+        const variant = line.variants.edges[0].node;
+        const isAdded = isProductInOrder(variant.id);
         return (
-          <View
-            key={line.id}
-            border="base"
-            padding="tight"
-            cornerRadius="large"
-          >
-            <InlineLayout
-              columns={["auto", "fill"]}
-              padding="tight"
-              blockAlignment="center"
-            >
-              <ProductThumbnail
-                source={line.image?.url}
-                alt={line.title || "Product"}
-                size="base"
-                badge={line.quantity}
-              />
-              <BlockStack
-                padding={["none", "none", "none", "base"]}
-                spacing="extraTight"
+          <View key={line.id} padding="tight" cornerRadius="large">
+            <BlockStack spacing="loose">
+              <InlineLayout
+                spacing="base"
+                columns={[64, "fill", "auto"]}
+                blockAlignment="center"
               >
-                <Text emphasis="bold">
-                  {line.title} - {line?.variant?.title}
-                </Text>
-                <Text appearance="subdued">
-                  {line.quantity} x{" "}
-                  {i18n.formatCurrency(
-                    parseFloat(
-                      line.originalUnitPriceSet?.presentmentMoney?.amount,
-                    ),
-                  )}
-                </Text>
-                <InlineLayout
-                  spacing="tight"
-                  columns={["auto", "auto", "auto"]}
+                <ProductThumbnail
+                  source={variant.image?.url}
+                  alt={variant.image?.altText || "Product"}
+                  size="base"
+                />
+                <BlockStack spacing="none">
+                  <Text size="base" emphasis="bold">
+                    {line.title}
+                    {variant?.title !== "Default Title"
+                      ? `: ${variant.title}`
+                      : ""}
+                  </Text>
+                  <Text appearance="subdued">
+                    {i18n.formatCurrency(parseFloat(variant.price.amount))}
+                  </Text>
+                </BlockStack>
+                <Button
+                  kind="secondary"
+                  loading={loadingVariantId === variant.id}
+                  disabled={isAdded}
+                  accessibilityLabel={
+                    isAdded ? "Product added" : `Add ${variant.title} to cart`
+                  }
+                  onPress={() => handleAddItem(variant.id)}
                 >
-                  <Button kind="plain">Apply discount</Button>
-                  <Button
-                    overlay={
-                      <ModalEditQty
-                        isLoading={isLoading}
-                        setIsLoading={setIsLoading}
-                        line={line}
-                        calculatedOrder={calculatedOrder}
-                        setCalculatedOrder={setCalculatedOrder}
-                      />
-                    }
-                    kind="plain"
-                  >
-                    Adjust quantity
-                  </Button>
-                </InlineLayout>
-              </BlockStack>
-            </InlineLayout>
+                  {isAdded ? "Added" : "Add"}
+                </Button>
+              </InlineLayout>
+            </BlockStack>
           </View>
         );
       })}

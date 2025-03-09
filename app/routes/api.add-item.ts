@@ -4,31 +4,45 @@ import { json } from "@remix-run/node";
 
 export async function action({ request }: ActionFunctionArgs) {
   try {
-    //Handle auth customer account request
+    // Handle auth customer account request
     const { sessionToken } = await authenticate.public.customerAccount(request);
     const shop = sessionToken.dest;
 
-    //Pull out data from request
+    // Pull out data from request
     const body = await request.json();
-    const { orderId } = body;
+    const { calculatedOrderId, lineItemId, quantity = 1 } = body;
+
+    if (!calculatedOrderId || !lineItemId === undefined) {
+      return json(
+        {
+          success: false,
+          error: "Missing required parameters",
+        },
+        { status: 400 },
+      );
+    }
 
     // Handle auth admin api
     const { admin } = await unauthenticated.admin(shop);
 
-    // Make the request to Shopify Admin API to begin order edit
+    // Make the request to Shopify Admin API to add variant
     const response = await admin.graphql(
-      `mutation beginEdit($orderId: ID!) {
-        orderEditBegin(id: $orderId) {
+      `mutation addVariant($calculatedOrderId: ID!, $variantId: ID!, $quantity: Int!) {
+        orderEditAddVariant(
+          id: $calculatedOrderId,
+          variantId: $variantId,
+          quantity: $quantity
+        ) {
           calculatedOrder {
             id
             originalOrder {
-            totalReceivedSet {
-              presentmentMoney {
-                amount
-                currencyCode
+              totalReceivedSet {
+                presentmentMoney {
+                  amount
+                  currencyCode
+                }
               }
             }
-          }
             totalPriceSet {
               presentmentMoney {
                 amount
@@ -60,29 +74,42 @@ export async function action({ request }: ActionFunctionArgs) {
                     id
                     inventoryQuantity
                     title
-                    product {
-                      id
+                  }
+                }
+              }
+            }
+            addedLineItems(first: 50) {
+              edges {
+                node {
+                  id
+                  quantity
+                  originalUnitPriceSet {
+                    presentmentMoney {
+                      amount
+                      currencyCode
                     }
+                  }
+                  title
+                  image {
+                    url
+                  }
+                  variant {
+                    id
+                    inventoryQuantity
+                    title
                   }
                 }
               }
             }
             stagedChanges(first: 10) {
-          edges {
-            node {
-              ... on OrderStagedChangeDecrementItem {
-                delta
-              }
-              ... on OrderStagedChangeIncrementItem {
-                delta
-              }
-            }
-          }
-        }
-            addedLineItems(first: 50) {
               edges {
                 node {
-                  id
+                  ... on OrderStagedChangeDecrementItem {
+                    delta
+                  }
+                  ... on OrderStagedChangeIncrementItem {
+                    delta
+                  }
                 }
               }
             }
@@ -95,14 +122,17 @@ export async function action({ request }: ActionFunctionArgs) {
       }`,
       {
         variables: {
-          orderId: orderId,
+          calculatedOrderId,
+          variantId: lineItemId,
+          quantity,
         },
       },
     );
 
     const responseJson = await response.json();
 
-    const userErrors = responseJson.data?.orderEditBegin?.userErrors;
+    // Check for user errors
+    const userErrors = responseJson.data?.orderEditAddVariant?.userErrors;
     if (userErrors && userErrors.length > 0) {
       return json({
         success: false,
@@ -112,13 +142,16 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return json({
       success: true,
-      data: responseJson,
+      data: responseJson.data,
     });
   } catch (error) {
-    console.error("🔴server error:", error);
-    return json({
-      success: false,
-      error: error instanceof Error ? error.message : "Server error occurred",
-    });
+    console.error("🔴 Server error:", error);
+    return json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Server error occurred",
+      },
+      { status: 500 },
+    );
   }
 }

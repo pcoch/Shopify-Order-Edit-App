@@ -20,6 +20,7 @@ import { useState, useEffect } from "react";
 import ProductList from "./components/ProductList";
 import EditAddress from "./components/ModalEditAddress";
 import CancelOrder from "./components/ModalCancel";
+import RecommendedProducts from "./components/RecommendedProducts";
 
 export default reactExtension("customer-account.order.page.render", () => (
   <FullPageExtension />
@@ -37,47 +38,12 @@ function FullPageExtension() {
   const [alreadyPaid, setAlreadyPaid] = useState(0);
   const [calculatedOrder, setCalculatedOrder] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  // const [isEdited, setIsEdited] = useState(false); //If order has a committed edit
   const [isEditing, setIsEditing] = useState(false); //If order is being edited
-
-  // //Check if order has been edited on first render
-  // const getOrderQuery = {
-  //   query: `query GetOrder($id: ID!) {
-  //     order(id: $id) {
-  //       edited
-  //     }
-  //   }`,
-  //   variables: {
-  //     id: id,
-  //   },
-  // };
-
-  // useEffect(() => {
-  //   const fetchOrderData = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         "shopify://customer-account/api/unstable/graphql.json",
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //           },
-  //           body: JSON.stringify(getOrderQuery),
-  //         },
-  //       );
-  //       const data = await response.json();
-  //       setIsEdited(data.data.order.edited);
-  //     } catch (error) {
-  //       console.error("Failed to fetch order data:", error);
-  //     }
-  //   };
-  //   fetchOrderData();
-  // }, [calculatedOrder]);
 
   //Handle 30 minute edit window
   const [timeLeft, setTimeLeft] = useState(() => {
     const processedTime = new Date(processedAt).getTime();
-    const thirtyMinsInMs = 30 * 60 * 1000;
+    const thirtyMinsInMs = 60 * 60 * 1000; //Update this for edit window
     const expiryTime = processedTime + thirtyMinsInMs;
     const remainingMs = expiryTime - Date.now();
 
@@ -123,7 +89,7 @@ function FullPageExtension() {
       const token = await sessionToken.get();
 
       const beginEditResponse = await fetch(
-        "https://calendar-boulder-interested-it.trycloudflare.com/api/begin-edit",
+        "https://include-objective-homework-truly.trycloudflare.com/api/begin-edit",
         {
           method: "POST",
           headers: {
@@ -169,7 +135,7 @@ function FullPageExtension() {
       const token = await sessionToken.get();
 
       const commitEditResponse = await fetch(
-        "https://calendar-boulder-interested-it.trycloudflare.com/api/commit-edit",
+        "https://include-objective-homework-truly.trycloudflare.com/api/commit-edit",
         {
           method: "POST",
           headers: {
@@ -220,9 +186,8 @@ function FullPageExtension() {
     }
   }, [calculatedOrder]);
 
-  //TODO: Remove this for prod 👀
   useEffect(() => {
-    console.log("calculatedOrder updated:", calculatedOrder);
+    console.log("Calculated Order:", calculatedOrder);
   }, [calculatedOrder]);
 
   return (
@@ -264,20 +229,24 @@ function FullPageExtension() {
         ) : undefined
       }
     >
-      <BlockStack maxInlineSize={705}>
+      <BlockStack maxInlineSize={705} spacing="base">
         {timeLeft !== "00:00" ? (
           <>
-            <View cornerRadius="large" minInlineSize="fill">
-              <Card padding>
-                <ProductList
-                  isLoading={isLoading}
-                  setIsLoading={setIsLoading}
-                  calculatedOrder={calculatedOrder}
-                  setCalculatedOrder={setCalculatedOrder}
-                ></ProductList>
-              </Card>
-            </View>
-
+            <Card padding>
+              <ProductList
+                isLoading={isLoading}
+                setIsLoading={setIsLoading}
+                calculatedOrder={calculatedOrder}
+                setCalculatedOrder={setCalculatedOrder}
+              ></ProductList>
+            </Card>
+            <Card padding>
+              <RecommendedProducts
+                setIsLoading={setIsLoading}
+                calculatedOrder={calculatedOrder}
+                setCalculatedOrder={setCalculatedOrder}
+              ></RecommendedProducts>
+            </Card>
             <View cornerRadius="large" minInlineSize="fill">
               <Card padding>
                 <BlockStack spacing="base">

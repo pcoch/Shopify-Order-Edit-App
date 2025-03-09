@@ -4,7 +4,6 @@ import {
   ProductThumbnail,
   Stepper,
   Button,
-  Banner,
   Modal,
   View,
   Text,
@@ -32,7 +31,7 @@ export default function EditQuantity({
     try {
       const token = await sessionToken.get();
       const response = await fetch(
-        "https://calendar-boulder-interested-it.trycloudflare.com/api/edit-quantity",
+        "https://include-objective-homework-truly.trycloudflare.com/api/edit-quantity",
         {
           method: "POST",
           headers: {
