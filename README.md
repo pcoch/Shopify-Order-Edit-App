@@ -23,5 +23,4 @@ Potentially an edit order button on the checkout UI page to navigate them, but l
 
 #Bugs
 
-- Unable to get available inventory with SFAPI for a product variant: https://github.com/Shopify/ui-extensions/issues/1594
 - When updating from a modal for the first edit, the button will turn to enabled before the modal closes.

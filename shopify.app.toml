@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "8dc689df5e38ed084049ef61706f2402"
-application_url = "https://calendar-boulder-interested-it.trycloudflare.com"
+application_url = "https://include-objective-homework-truly.trycloudflare.com"
 embedded = true
 name = "order-edit-app"
 handle = "order-edit-app-3"
@@ -28,9 +28,9 @@ scopes = "read_customers,read_orders,write_order_edits,write_orders,write_produc
 
 [auth]
 redirect_urls = [
-  "https://calendar-boulder-interested-it.trycloudflare.com/auth/callback",
-  "https://calendar-boulder-interested-it.trycloudflare.com/auth/shopify/callback",
-  "https://calendar-boulder-interested-it.trycloudflare.com/api/auth/callback"
+  "https://include-objective-homework-truly.trycloudflare.com/auth/callback",
+  "https://include-objective-homework-truly.trycloudflare.com/auth/shopify/callback",
+  "https://include-objective-homework-truly.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
